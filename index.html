@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f26a24">
+  <title>Good Shift — Tiny Workday</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      color-scheme: light;
+      --ink: #29231f;
+      --muted: #766b64;
+      --orange: #ff762e;
+      --orange-deep: #eb5a1d;
+      --peach: #ffe4d1;
+      --cream: #fffaf5;
+      --line: rgba(56, 35, 22, .1);
+      --shadow: 0 18px 45px rgba(111, 58, 24, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background: #fff9f3;
+      color: var(--ink);
+      font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; }
+    .page-shell {
+      width: min(1050px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 38px 0 48px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 15px; font-weight: 800; letter-spacing: -.04em; }
+    .brand-mark {
+      display: grid; width: 36px; height: 36px; place-items: center;
+      border-radius: 12px; background: var(--orange); color: white;
+      box-shadow: 0 5px 12px rgba(242, 106, 36, .24);
+    }
+    .brand-mark svg { width: 20px; height: 20px; }
+    .day-pill {
+      display: inline-flex; align-items: center; gap: 8px; padding: 9px 13px;
+      border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.62);
+      color: #675a52; font-size: 12px; font-weight: 700;
+    }
+    .day-dot { width: 7px; height: 7px; border-radius: 50%; background: #52a96e; box-shadow: 0 0 0 3px rgba(82,169,110,.12); }
+    .intro { margin-bottom: 29px; }
+    .eyebrow { margin: 0 0 10px; color: var(--orange-deep); font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(32px, 5vw, 48px); line-height: 1.04; letter-spacing: -.065em; }
+    .subtitle { margin: 12px 0 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+    .dashboard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .card {
+      position: relative; min-height: 225px; overflow: hidden; padding: 23px;
+      border: 1px solid rgba(133, 69, 31, .08); border-radius: 22px; box-shadow: var(--shadow);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 22px 48px rgba(111, 58, 24, .11); }
+    .card-jobs { background: #ffe2cc; }
+    .card-battery { background: #ffb26f; }
+    .card-quit { background: #ff8c4c; }
+    .card-balance { background: #ffd1a9; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .card-title { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 800; letter-spacing: -.025em; }
+    .icon-box { display: grid; width: 31px; height: 31px; flex: 0 0 31px; place-items: center; border-radius: 10px; background: rgba(255,255,255,.56); }
+    .icon-box svg { width: 16px; height: 16px; stroke: currentColor; }
+    .card-kicker { color: rgba(58,36,23,.64); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .09em; text-transform: uppercase; }
+    .task-name { margin: 28px 0 8px; font-size: clamp(23px, 3vw, 29px); font-weight: 800; line-height: 1.1; letter-spacing: -.055em; }
+    .task-note { margin: 0; color: rgba(47,35,27,.7); font-size: 12px; line-height: 1.5; }
+    .task-indicator { display: inline-flex; align-items: center; gap: 7px; margin-top: 21px; padding: 7px 10px; border-radius: 99px; background: rgba(255,255,255,.53); font-size: 10px; font-weight: 800; }
+    .task-indicator::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #4a9b5b; }
+    .task-indicator.is-idle::before { background: #96877d; }
+
+    .battery-content { display: flex; align-items: center; gap: 19px; margin-top: 28px; }
+    .battery-visual { position: relative; width: 101px; height: 49px; flex: 0 0 101px; padding: 5px; border: 2px solid rgba(48,34,25,.75); border-radius: 9px; }
+    .battery-visual::after { content: ''; position: absolute; top: 14px; right: -7px; width: 5px; height: 17px; border-radius: 0 3px 3px 0; background: rgba(48,34,25,.75); }
+    .battery-fill { width: 50%; height: 100%; border-radius: 4px; background: #2f3c2b; transition: width .65s ease, background-color .4s ease; }
+    .battery-info { display: flex; flex-direction: column; }
+    .battery-percent { font-size: 31px; font-weight: 800; letter-spacing: -.07em; line-height: 1; }
+    .battery-state { margin-top: 7px; color: rgba(48,34,25,.68); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .12em; }
+    .battery-caption { margin: 18px 0 0; color: rgba(48,34,25,.7); font-size: 11px; }
+
+    .quit-card-copy { max-width: 260px; margin: 25px 0 19px; color: rgba(48,34,25,.76); font-size: 12px; line-height: 1.6; }
+    .quiet-button {
+      display: inline-flex; align-items: center; gap: 8px; min-height: 39px; padding: 0 14px;
+      border: 1px solid rgba(52,34,23,.2); border-radius: 11px; background: rgba(255,255,255,.36);
+      color: var(--ink); font-size: 11px; font-weight: 800; cursor: pointer;
+      transition: background .18s ease, transform .18s ease, opacity .18s ease;
+    }
+    .quiet-button:hover:not(:disabled) { background: rgba(255,255,255,.68); transform: translateY(-1px); }
+    .quiet-button:disabled { opacity: .48; cursor: not-allowed; }
+    .quiet-button svg { width: 14px; height: 14px; }
+
+    .balance-number { margin: 29px 0 4px; font-size: clamp(42px, 6vw, 54px); font-weight: 800; letter-spacing: -.075em; line-height: .98; font-variant-numeric: tabular-nums; }
+    .balance-caption { color: rgba(48,34,25,.7); font-size: 11px; }
+    .balance-footer { display: flex; align-items: center; gap: 7px; margin-top: 18px; color: rgba(48,34,25,.72); font-size: 10px; font-weight: 700; }
+    .coin { display: grid; width: 19px; height: 19px; place-items: center; border-radius: 50%; background: rgba(255,255,255,.53); font-family: 'DM Mono', monospace; font-size: 11px; }
+
+    .action-card {
+      display: flex; min-height: 125px; align-items: center; justify-content: space-between; gap: 24px;
+      grid-column: 1 / -1; padding: 24px 28px; border-radius: 22px;
+      background: #ff762e; color: var(--ink); box-shadow: 0 19px 42px rgba(111, 58, 24, .15);
+      transition: background .2s ease;
+    }
+    .action-copy { display: flex; align-items: flex-start; gap: 16px; }
+    .action-icon { display: grid; width: 43px; height: 43px; flex: 0 0 43px; place-items: center; border-radius: 14px; background: rgba(255,255,255,.48); color: var(--ink); }
+    .action-icon svg { width: 20px; height: 20px; }
+    .action-label { margin: 1px 0 5px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: rgba(48,34,25,.68); }
+    .action-title { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.04em; }
+    .action-description { margin: 5px 0 0; color: rgba(48,34,25,.72); font-size: 11px; }
+    .complete-button {
+      display: inline-flex; min-width: 185px; min-height: 51px; align-items: center; justify-content: center; gap: 10px;
+      padding: 0 20px; border: 0; border-radius: 13px; background: #30251f; color: white;
+      font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 7px 18px rgba(71,38,19,.17);
+      transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .complete-button:hover:not(:disabled) { transform: translateY(-2px); background: #493328; box-shadow: 0 10px 24px rgba(71,38,19,.23); }
+    .complete-button:active:not(:disabled) { transform: translateY(0); }
+    .complete-button:disabled { opacity: .52; cursor: not-allowed; box-shadow: none; }
+    .complete-button svg { width: 16px; height: 16px; }
+    .feedback { min-height: 20px; margin: 17px 0 0; color: #806f64; text-align: center; font-size: 11px; }
+    .feedback strong { color: var(--orange-deep); }
+    .footer { margin-top: 27px; color: #a09389; text-align: center; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .07em; }
+    button:focus-visible { outline: 3px solid #40291c; outline-offset: 3px; }
+    .money-pop { animation: money-pop .42s ease; }
+    @keyframes money-pop { 50% { transform: scale(1.09); color: #d84f14; } }
+
+    @media (max-width: 680px) {
+      .page-shell { width: min(100% - 32px, 510px); padding: 25px 0 32px; }
+      .topbar { margin-bottom: 37px; }
+      .dashboard { gap: 12px; }
+      .card { min-height: 205px; padding: 18px; border-radius: 18px; }
+      .card-title { gap: 7px; font-size: 12px; }
+      .card-head { align-items: flex-start; }
+      .card-kicker { padding-top: 8px; font-size: 8px; }
+      .icon-box { width: 28px; height: 28px; flex-basis: 28px; }
+      .task-name { margin-top: 25px; font-size: 22px; }
+      .battery-content { gap: 12px; margin-top: 31px; }
+      .battery-visual { width: 80px; height: 43px; flex-basis: 80px; }
+      .battery-visual::after { top: 11px; }
+      .battery-percent { font-size: 27px; }
+      .battery-caption { margin-top: 17px; font-size: 10px; }
+      .balance-number { margin-top: 31px; font-size: 44px; }
+      .action-card { min-height: 145px; align-items: stretch; flex-direction: column; gap: 17px; padding: 19px; border-radius: 18px; }
+      .action-copy { gap: 12px; }
+      .action-icon { width: 37px; height: 37px; flex-basis: 37px; border-radius: 12px; }
+      .action-title { font-size: 17px; }
+      .complete-button { width: 100%; min-height: 47px; }
+    }
+    @media (max-width: 390px) {
+      .page-shell { width: calc(100% - 24px); }
+      .dashboard { gap: 9px; }
+      .card { min-height: 201px; padding: 14px; }
+      .card-title { font-size: 11px; }
+      .card-kicker { display: none; }
+      .task-name { font-size: 20px; }
+      .battery-content { gap: 9px; }
+      .battery-visual { width: 70px; flex-basis: 70px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M13.2 2.8 5.6 13h5.2l-.5 8.2L18.4 11h-5.3l.1-8.2Z" fill="currentColor" stroke="currentColor" stroke-linejoin="round" stroke-width="1.3"/></svg></span>
+        <span>good shift</span>
+      </div>
+      <div class="day-pill"><span class="day-dot"></span> YOUR MINI WORKDAY</div>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">A little progress goes a long way</p>
+      <h1>Make today<br>count.</h1>
+      <p class="subtitle">Knock out a task, earn a little, and keep your momentum going.</p>
+    </section>
+
+    <section class="dashboard" aria-label="Workday dashboard">
+      <article class="card card-jobs" aria-labelledby="jobs-title">
+        <div class="card-head">
+          <h2 class="card-title" id="jobs-title"><span class="icon-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Jobs to Do</h2>
+          <span class="card-kicker">01 / TASK</span>
+        </div>
+        <p class="task-name" id="task-name" aria-live="polite">Sorting Files</p>
+        <p class="task-note" id="task-note">A fresh task is ready when you are.</p>
+        <span class="task-indicator" id="task-status">IN PROGRESS</span>
+      </article>
+
+      <article class="card card-battery" aria-labelledby="battery-title">
+        <div class="card-head">
+          <h2 class="card-title" id="battery-title"><span class="icon-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="17" height="10" rx="2"/><path d="M21 10v4"/><path d="m11 8.5-2 3h3l-1 3"/></svg></span>Battery Saver</h2>
+          <span class="card-kicker">02 / POWER</span>
+        </div>
+        <div class="battery-content" aria-label="Animated battery level">
+          <div class="battery-visual" role="img" aria-label="Battery"><div class="battery-fill" id="battery-fill"></div></div>
+          <div class="battery-info"><span class="battery-percent" id="battery-percent">72%</span><span class="battery-state" id="battery-state">DRAINING</span></div>
+        </div>
+        <p class="battery-caption">Your focus meter is doing its thing.</p>
+      </article>
+
+      <article class="card card-quit" aria-labelledby="quit-title">
+        <div class="card-head">
+          <h2 class="card-title" id="quit-title"><span class="icon-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></svg></span>Quit Job</h2>
+          <span class="card-kicker">03 / RESET</span>
+        </div>
+        <p class="quit-card-copy">Need to step away? Cancel this task and take a breather. No cash earned, no hard feelings.</p>
+        <button class="quiet-button" id="quit-button" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          Cancel current job
+        </button>
+      </article>
+
+      <article class="card card-balance" aria-labelledby="balance-title">
+        <div class="card-head">
+          <h2 class="card-title" id="balance-title"><span class="icon-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M16 12h.01M3 9h18M7 15h3"/></svg></span>Balance</h2>
+          <span class="card-kicker">04 / EARNINGS</span>
+        </div>
+        <p class="balance-number" id="balance" aria-live="polite">$0</p>
+        <span class="balance-caption">A tidy little nest egg.</span>
+        <div class="balance-footer"><span class="coin">$</span> <span id="jobs-completed">0 jobs completed</span></div>
+      </article>
+
+      <section class="action-card" aria-labelledby="action-title">
+        <div class="action-copy">
+          <span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+          <div>
+            <p class="action-label">05 / THE BIG FINISH</p>
+            <h2 class="action-title" id="action-title">Completed Job</h2>
+            <p class="action-description" id="action-description">Finish your task and collect $25.</p>
+          </div>
+        </div>
+        <button class="complete-button" id="complete-button" type="button">
+          <span id="button-label">Complete job</span>
+          <svg id="button-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </section>
+    </section>
+    <p class="feedback" id="feedback" role="status" aria-live="polite">You're on a roll. One task at a time.</p>
+    <footer class="footer">SMALL TASKS. GOOD THINGS. REPEAT.</footer>
+  </main>
+
+  <script>
+    (() => {
+      const tasks = ['Sorting Files', 'Coding Feature', 'Answering Emails', 'Planning the Week', 'Reviewing Notes', 'Organizing Desk', 'Writing a Brief', 'Updating the Deck'];
+      const taskName = document.getElementById('task-name');
+      const taskNote = document.getElementById('task-note');
+      const taskStatus = document.getElementById('task-status');
+      const balanceDisplay = document.getElementById('balance');
+      const completedDisplay = document.getElementById('jobs-completed');
+      const completeButton = document.getElementById('complete-button');
+      const buttonLabel = document.getElementById('button-label');
+      const actionDescription = document.getElementById('action-description');
+      const quitButton = document.getElementById('quit-button');
+      const feedback = document.getElementById('feedback');
+      const batteryFill = document.getElementById('battery-fill');
+      const batteryPercent = document.getElementById('battery-percent');
+      const batteryState = document.getElementById('battery-state');
+      let balance = 0;
+      let jobsCompleted = 0;
+      let jobActive = true;
+      let lastTask = 'Sorting Files';
+
+      function pickTask() {
+        const choices = tasks.filter(task => task !== lastTask);
+        lastTask = choices[Math.floor(Math.random() * choices.length)];
+        return lastTask;
+      }
+
+      function renderJob() {
+        completeButton.disabled = !jobActive;
+        quitButton.disabled = !jobActive;
+        taskStatus.textContent = jobActive ? 'IN PROGRESS' : 'OFF THE CLOCK';
+        taskStatus.classList.toggle('is-idle', !jobActive);
+        buttonLabel.textContent = jobActive ? 'Complete job' : 'Start a new job';
+        actionDescription.textContent = jobActive ? 'Finish your task and collect $25.' : 'Pick up another task when you’re ready.';
+        document.getElementById('button-arrow').innerHTML = jobActive
+          ? '<path d="M5 12h14M13 6l6 6-6 6" />'
+          : '<path d="M12 5v14M5 12h14" />';
+      }
+
+      completeButton.addEventListener('click', () => {
+        if (!jobActive) {
+          taskName.textContent = pickTask();
+          taskNote.textContent = 'A fresh task is ready when you are.';
+          jobActive = true;
+          renderJob();
+          feedback.textContent = 'New task picked up. You’ve got this.';
+          return;
+        }
+        balance += 25;
+        jobsCompleted += 1;
+        balanceDisplay.textContent = '$' + balance;
+        balanceDisplay.classList.remove('money-pop');
+        void balanceDisplay.offsetWidth;
+        balanceDisplay.classList.add('money-pop');
+        completedDisplay.textContent = jobsCompleted + (jobsCompleted === 1 ? ' job completed' : ' jobs completed');
+        const finishedTask = taskName.textContent;
+        taskName.textContent = pickTask();
+        taskNote.textContent = 'Nice work on ' + finishedTask.toLowerCase() + '. Here’s what’s next.';
+        feedback.innerHTML = 'Job done! <strong>+$25</strong> added to your balance. Keep it up!';
+        jobActive = true;
+        renderJob();
+      });
+
+      quitButton.addEventListener('click', () => {
+        if (!jobActive) return;
+        jobActive = false;
+        taskName.textContent = 'No active job';
+        taskNote.textContent = 'Take a moment. You can start again any time.';
+        feedback.textContent = 'Job cancelled. Your balance stays exactly the same.';
+        renderJob();
+      });
+
+      // A smooth, looping charge-and-drain pulse keeps the battery visual alive.
+      const startedAt = performance.now();
+      function animateBattery(now) {
+        const phase = ((now - startedAt) % 7000) / 7000;
+        const level = Math.round(50 + Math.sin(phase * Math.PI * 2 - Math.PI / 2) * 32);
+        const charging = Math.cos(phase * Math.PI * 2 - Math.PI / 2) > 0;
+        batteryFill.style.width = level + '%';
+        batteryFill.style.backgroundColor = level < 25 ? '#973d24' : '#2f3c2b';
+        batteryPercent.textContent = level + '%';
+        batteryState.textContent = charging ? 'CHARGING' : 'DRAINING';
+        requestAnimationFrame(animateBattery);
+      }
+      requestAnimationFrame(animateBattery);
+      renderJob();
+    })();
+  </script>
+</body>
+</html>
